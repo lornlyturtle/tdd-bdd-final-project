@@ -18,7 +18,8 @@
 Test Factory to make fake objects for testing
 """
 import factory
-from factory.fuzzy import FuzzyChoice, FuzzyDecimal
+from factory.fuzzy import FuzzyChoice as FuzzyChoiceRAT
+from factory.fuzzy import FuzzyDecimal as FuzzyDecimalRAT
 from service.models import Product, Category
 
 
@@ -27,8 +28,16 @@ class ProductFactory(factory.Factory):
 
     class Meta:
         """Maps factory to data model"""
-
         model = Product
 
     id = factory.Sequence(lambda n: n)
-   ## Add code to create Fake Products 
+    name = FuzzyChoiceRAT(choices=["Hat", "Pants", "Dress",
+                                   "Kumquat", "Dragon Fruit",
+                                   "Plates", "Towels", "Battery",
+                                   "Tire", "Wrench", "Drill"])
+    description = factory.Faker("text")
+    price = FuzzyDecimalRAT(0.5, 2000.0, 2)
+    available = FuzzyChoiceRAT(choices=[True, False])
+    category = FuzzyChoiceRAT(choices=[Category.UNKNOWN, Category.CLOTHES,
+                                       Category.FOOD, Category.HOUSEWARES,
+                                       Category.AUTOMOTIVE, Category.TOOLS])
