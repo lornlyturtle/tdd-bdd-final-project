@@ -97,6 +97,17 @@ class Product(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def print(self):
+        """
+        Print product info for debug
+        """
+        logger.info("ID:    %s", self.id)
+        logger.info("name:  %s", self.name)
+        logger.info("desc:  %s", self.description)
+        logger.info("price: %s", str(self.price))
+        logger.info("avail: %s", str(self.available))
+        logger.info("cat:   %s", str(self.category))
+
     def update(self):
         """
         Updates a Product to the database

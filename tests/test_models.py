@@ -66,16 +66,6 @@ class TestProductModel(unittest.TestCase):
         """This runs after each test"""
         db.session.remove()
 
-    @classmethod
-    def print_product(cls, product):
-        """Print product info for debug"""
-        print("ID:    " + str(product.id))
-        print("name:  " + product.name)
-        print("desc:  " + product.description)
-        print("price: " + str(product.price))
-        print("avail: " + str(product.available))
-        print("cat:   " + str(product.category))
-
     ######################################################################
     #  T E S T   C A S E S
     ######################################################################
@@ -112,7 +102,89 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(new_product.available, product.available)
         self.assertEqual(new_product.category, product.category)
 
-    def test_read_product(self):
-        """Validate read functionality """
+    def test_find_product_or_read_product(self):
+        """It should Create a product, add to database, then Read from database"""
         product = ProductFactory()
-        self.print_product(product)
+        product.print()
+        product.id = None
+        product.create()
+        self.assertIsNotNone(product.id)
+        found_product = Product.find(product.id)
+        self.assertEqual(found_product.id, product.id)
+        self.assertEqual(found_product.name, product.name)
+        self.assertEqual(found_product.description, product.description)
+        self.assertEqual(Decimal(found_product.price), product.price)
+        self.assertEqual(found_product.available, product.available)
+        self.assertEqual(found_product.category, product.category)
+
+    def test_update_product(self):
+        """It should Update a product"""
+        product = ProductFactory()
+        product.print()
+        product.id = None
+        product.create()
+        product.print()
+        orig_id = product.id
+        self.assertIsNotNone(orig_id)
+        new_description = "The quick brown fox jumped over the lazy dogs."
+        product.description = new_description
+        product.update()
+        # Ensure we've updated local instance
+        self.assertEqual(product.id, orig_id)
+        self.assertEqual(product.description, new_description)
+        # Ensure product in database has been updated too
+        found_product = Product.find(product.id)
+        self.assertEqual(found_product.id, product.id)
+        self.assertEqual(found_product.description, new_description)
+        products = Product.all()
+        self.assertEqual(len(products), 1)
+
+    def test_delete_product(self):
+        """It should Delete a product"""
+        # Create a product and store in the database
+        product = ProductFactory()
+        product.create()
+        # Check the database only contains one item
+        products = Product.all()
+        self.assertEqual(len(products), 1)
+        # Remove the product
+        product.delete()
+        # Check the database is empty
+        products = Product.all()
+        self.assertEqual(len(products), 0)
+
+    def test_list_all_products(self):
+        """It should list all a product"""
+        # Start with no products in the database
+        products = Product.all()
+        self.assertEqual(len(products), 0)
+        num_prod_to_add = 5
+        for _ in range(num_prod_to_add):
+            product = ProductFactory()
+            product.create()
+        # Check the database contains five items
+        products = Product.all()
+        self.assertEqual(len(products), num_prod_to_add)
+
+    def test_find_product_by_name(self):
+        """It should find a product by name"""
+        num_prod_to_add = 5
+        for _ in range(num_prod_to_add):
+            product = ProductFactory()
+            product.create()
+        products = Product.all()
+        first_product_name = products[0].name
+        # Check how many times the name of the first
+        # product appears in the list of all products
+        num_products_with_same_name = 0
+        for prod in products:
+            if prod is first_product_name:
+                print(first_product_name)
+                logger.info("found a match for " + first_product_name)
+                num_products_with_same_name = num_products_with_same_name + 1
+            else
+                print("no match")
+        self.assertEqual(num_products_with_same_name, 1)
+        # use find_by_name
+        found_product = Product.find_by_name(first_product_name)
+        self.assertEqual(found_product.name, first_product_name)
