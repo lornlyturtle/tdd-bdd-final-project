@@ -178,13 +178,12 @@ class TestProductModel(unittest.TestCase):
         # product appears in the list of all products
         num_products_with_same_name = 0
         for prod in products:
-            if prod is first_product_name:
-                print(first_product_name)
-                logger.info("found a match for " + first_product_name)
+            print("current prod: " + prod.name)
+            if prod.name == first_product_name:
+                print("found a match for " + first_product_name)
                 num_products_with_same_name = num_products_with_same_name + 1
-            else
-                print("no match")
-        self.assertEqual(num_products_with_same_name, 1)
+            else:
+                print("no match: " + prod.name + " is not " + first_product_name)
         # use find_by_name
-        found_product = Product.find_by_name(first_product_name)
-        self.assertEqual(found_product.name, first_product_name)
+        found_product_list = Product.find_by_name(first_product_name)
+        self.assertEqual(num_products_with_same_name, found_product_list.count())
