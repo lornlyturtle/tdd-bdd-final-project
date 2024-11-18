@@ -27,7 +27,7 @@ import os
 import logging
 import unittest
 from decimal import Decimal
-from service.models import Product, Category, db
+from service.models import Product, Category, DataValidationError, db
 from service import app
 from tests.factories import ProductFactory
 
@@ -117,6 +117,13 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(found_product.available, product.available)
         self.assertEqual(found_product.category, product.category)
 
+    def test_update_product_error(self):
+        """It should test error thrown when update product without id"""
+        product = ProductFactory()
+        product.print()
+        product.id = None
+        self.assertRaises(DataValidationError, product.update)
+
     def test_update_product(self):
         """It should Update a product"""
         product = ProductFactory()
@@ -187,3 +194,77 @@ class TestProductModel(unittest.TestCase):
         # use find_by_name
         found_product_list = Product.find_by_name(first_product_name)
         self.assertEqual(num_products_with_same_name, found_product_list.count())
+
+    def test_find_product_by_availability(self):
+        """It should find a product by availability"""
+        num_prod_to_add = 10
+        for _ in range(num_prod_to_add):
+            product = ProductFactory()
+            product.create()
+        products = Product.all()
+        first_product_avail = products[0].available
+        # Check how many times the availability of the first
+        # product appears in the list of all products
+        num_products_with_same_avail = 0
+        for prod in products:
+            print("current prod: " + prod.name)
+            if prod.available == first_product_avail:
+                print("found a match for " + str(first_product_avail))
+                num_products_with_same_avail = num_products_with_same_avail + 1
+            else:
+                print("no match: " + prod.name + " is not " + str(first_product_avail))
+        # use find_by_name
+        found_product_list = Product.find_by_availability(first_product_avail)
+        self.assertEqual(num_products_with_same_avail, found_product_list.count())
+        for prod in found_product_list:
+            self.assertEqual(prod.available, first_product_avail)
+
+    def test_find_product_by_category(self):
+        """It should find a product by category"""
+        num_prod_to_add = 10
+        for _ in range(num_prod_to_add):
+            product = ProductFactory()
+            product.create()
+        products = Product.all()
+        first_product_cat = products[0].category
+        # Check how many times the availability of the first
+        # product appears in the list of all products
+        num_products_with_same_cat = 0
+        for prod in products:
+            print("current prod: " + prod.name)
+            if prod.category == first_product_cat:
+                print("found a match for " + str(first_product_cat))
+                num_products_with_same_cat = num_products_with_same_cat + 1
+            else:
+                print("no match: " + prod.name + " is not " + str(first_product_cat) + ", it is: " + str(prod.category))
+        # use find_by_name
+        found_product_list = Product.find_by_category(first_product_cat)
+        self.assertEqual(num_products_with_same_cat, found_product_list.count())
+        for prod in found_product_list:
+            self.assertEqual(prod.category, first_product_cat)
+
+    def test_find_product_by_price(self):
+        """It should find a product by price"""
+        num_prod_to_add = 5
+        for _ in range(num_prod_to_add):
+            product = ProductFactory()
+            product.create()
+        products = Product.all()
+        first_product_price = products[0].price
+        # Check how many times the name of the first
+        # product appears in the list of all products
+        num_products_with_same_price = 0
+        for prod in products:
+            print("current prod: " + prod.name)
+            if prod.price == first_product_price:
+                num_products_with_same_price += 1
+        # use find_by_name
+        found_product_list = Product.find_by_price(first_product_price)
+        self.assertIsNotNone(num_products_with_same_price)
+        self.assertEqual(num_products_with_same_price, found_product_list.count())
+        # Set second product price to integer for code coverage
+        products[1].price = 30
+        products[1].update()
+        found_product_list = Product.find_by_price("30 ")
+        self.assertEqual(1, found_product_list.count())
+        self.assertEqual(products[1].price, found_product_list[0].price)
